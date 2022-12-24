@@ -113,3 +113,22 @@ func (server *Server) updateAccount(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+type deleteAccountReq struct {
+	ID int64 `uri:"id" binding:"min=1"`
+}
+
+func (server *Server) deleteAccount(c *gin.Context) {
+	var req deleteAccountReq
+	if err := c.ShouldBindUri(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := server.store.DeleteAccount(c, req.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
