@@ -106,6 +106,111 @@ func TestGetAccount(t *testing.T) {
 	}
 }
 
+func TestCreateAccount(t *testing.T) {
+	testCase := []struct {
+		name          string
+		input         createAccountReq
+		buildStubs    func(store *mockdb.MockStore, arg createAccountReq)
+		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			input: createAccountReq{
+				Owner:    util.RandomOwner(),
+				Currency: util.RandomCurrency(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg createAccountReq) {
+				store.EXPECT().
+					CreateAccount(gomock.Any(), gomock.Eq(db.CreateAccountParams{
+						Owner:    arg.Owner,
+						Currency: arg.Currency,
+						Balance:  0,
+					})).
+					Times(1).
+					Return(db.Account{}, nil)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, w.Code)
+			},
+		},
+		{
+			name: "InvalidOwner",
+			input: createAccountReq{
+				Currency: util.RandomCurrency(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg createAccountReq) {
+				store.EXPECT().
+					CreateAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "InvalidCurrency",
+			input: createAccountReq{
+				Owner:    util.RandomOwner(),
+				Currency: util.RandomString(4),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg createAccountReq) {
+				store.EXPECT().
+					CreateAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "InternalServerError",
+			input: createAccountReq{
+				Owner:    util.RandomOwner(),
+				Currency: util.RandomCurrency(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg createAccountReq) {
+				store.EXPECT().
+					CreateAccount(gomock.Any(), gomock.Eq(db.CreateAccountParams{
+						Owner:    arg.Owner,
+						Currency: arg.Currency,
+						Balance:  0,
+					})).
+					Times(1).
+					Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+	}
+
+	for i := range testCase {
+		tc := testCase[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			arg := tc.input
+			jsonVal, err := json.Marshal(arg)
+			require.NoError(t, err)
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store, arg)
+
+			server := NewServer(store)
+			w := httptest.NewRecorder()
+
+			url := "/accounts"
+			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonVal))
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(w, req)
+			tc.checkResponse(t, w)
+		})
+	}
+}
+
 func randomAccount() db.Account {
 	return db.Account{
 		ID:       util.RandomInt(1, 1000),
