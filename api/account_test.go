@@ -318,6 +318,116 @@ func TestListAccount(t *testing.T) {
 			tc.checkResponse(t, w)
 		})
 	}
+}
+
+func TestUpdateAccount(t *testing.T) {
+	account := randomAccount()
+	testCase := []struct {
+		name          string
+		input         updateAccountReq
+		buildStubs    func(store *mockdb.MockStore, arg updateAccountReq)
+		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			input: updateAccountReq{
+				ID:      account.ID,
+				Balance: util.RandomBalance(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg updateAccountReq) {
+				store.EXPECT().
+					UpdateAccount(gomock.Any(), gomock.Eq(db.UpdateAccountParams{
+						ID:      account.ID,
+						Balance: arg.Balance,
+					})).
+					Times(1).
+					Return(db.Account{}, nil)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNoContent, w.Code)
+			},
+		},
+		{
+			name: "InvalidID",
+			input: updateAccountReq{
+				ID:      0,
+				Balance: util.RandomBalance(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg updateAccountReq) {
+				store.EXPECT().
+					UpdateAccount(gomock.Any(), gomock.Eq(db.UpdateAccountParams{
+						ID:      account.ID,
+						Balance: arg.Balance,
+					})).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "InvalBalance",
+			input: updateAccountReq{
+				ID:      account.ID,
+				Balance: -1,
+			},
+			buildStubs: func(store *mockdb.MockStore, arg updateAccountReq) {
+				store.EXPECT().
+					UpdateAccount(gomock.Any(), gomock.Eq(db.UpdateAccountParams{
+						ID:      account.ID,
+						Balance: arg.Balance,
+					})).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "InternalServerError",
+			input: updateAccountReq{
+				ID:      account.ID,
+				Balance: util.RandomBalance(),
+			},
+			buildStubs: func(store *mockdb.MockStore, arg updateAccountReq) {
+				store.EXPECT().
+					UpdateAccount(gomock.Any(), gomock.Eq(db.UpdateAccountParams{
+						ID:      account.ID,
+						Balance: arg.Balance,
+					})).
+					Times(1).
+					Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+	}
+
+	for i := range testCase {
+		tc := testCase[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			store := mockdb.NewMockStore(ctrl)
+
+			arg := tc.input
+			jsonVal, err := json.Marshal(arg)
+			require.NoError(t, err)
+
+			tc.buildStubs(store, arg)
+			server := NewServer(store)
+			w := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/accounts/%d", arg.ID)
+			req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jsonVal))
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(w, req)
+			tc.checkResponse(t, w)
+		})
+	}
 
 }
 

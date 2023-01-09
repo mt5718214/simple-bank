@@ -87,7 +87,7 @@ func (server *Server) listAccount(c *gin.Context) {
 
 type updateAccountReq struct {
 	ID      int64 `uri:"id" binding:"min=1"`
-	Balance int64 `json:"balance"`
+	Balance int64 `json:"balance" binding:"min=0"`
 }
 
 func (server *Server) updateAccount(c *gin.Context) {
