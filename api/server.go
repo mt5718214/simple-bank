@@ -7,6 +7,8 @@ import (
 	"simplebank/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type Server struct {
@@ -34,6 +36,11 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+
+	// binding.Validator.Engine() get the current validator that gin is using
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
