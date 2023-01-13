@@ -428,7 +428,79 @@ func TestUpdateAccount(t *testing.T) {
 			tc.checkResponse(t, w)
 		})
 	}
+}
 
+func TestDeleteAccount(t *testing.T) {
+	account := randomAccount()
+
+	testCase := []struct {
+		name          string
+		ID            int64
+		buildStub     func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			ID:   account.ID,
+			buildStub: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					DeleteAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(nil)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNoContent, w.Code)
+			},
+		},
+		{
+			name: "InvalidID",
+			ID:   0,
+			buildStub: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					DeleteAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "InternalServerError",
+			ID:   account.ID,
+			buildStub: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					DeleteAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+	}
+
+	for i := range testCase {
+		tc := testCase[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			server := NewServer(store)
+
+			tc.buildStub(store)
+
+			url := fmt.Sprintf("/accounts/%d", tc.ID)
+			req, err := http.NewRequest(http.MethodDelete, url, nil)
+			require.NoError(t, err)
+
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+
+			tc.checkResponse(t, w)
+		})
+	}
 }
 
 func randomAccount() db.Account {
