@@ -8,6 +8,7 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/crypto v0.4.0
 )
 
 require (
@@ -35,7 +36,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
