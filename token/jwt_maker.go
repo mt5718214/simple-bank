@@ -1,19 +1,13 @@
 package token
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 const minSecretKeySize = 32
-
-var (
-	ErrInvalidToken = errors.New("token is invalid")
-)
 
 type JWtMaker struct {
 	secretKey string
@@ -68,30 +62,4 @@ func (maker *JWtMaker) VerifyToken(token string) (*Payload, error) {
 	}
 
 	return nil, ErrInvalidToken
-}
-
-// Payload contains the payload data of the token
-type Payload struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	jwt.RegisteredClaims
-}
-
-// creates a new token payload with specific username and duration
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	tokenId, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-
-	payload := &Payload{
-		ID:       tokenId,
-		Username: username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
-		},
-	}
-
-	return payload, nil
 }
