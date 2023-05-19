@@ -92,7 +92,7 @@ func TestGetAccount(t *testing.T) {
 			tc.buildStubs(store)
 
 			// test server and send request
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			w := httptest.NewRecorder()
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
 
@@ -198,7 +198,7 @@ func TestCreateAccount(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store, arg)
 
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			w := httptest.NewRecorder()
 
 			url := "/accounts"
@@ -311,7 +311,7 @@ func TestListAccount(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)
 
@@ -417,7 +417,7 @@ func TestUpdateAccount(t *testing.T) {
 			require.NoError(t, err)
 
 			tc.buildStubs(store, arg)
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			w := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", arg.ID)
@@ -487,7 +487,7 @@ func TestDeleteAccount(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			tc.buildStub(store)
 
