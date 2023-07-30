@@ -1,0 +1,15 @@
+linters-settings:
+  govet:
+    vettool:
+      settings:
+        - all
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gofmt
+    - govet
+    - revive
+    - staticcheck
+    - unused
