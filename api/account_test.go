@@ -241,7 +241,8 @@ func TestListAccount(t *testing.T) {
 				require.Equal(t, http.StatusOK, w.Code)
 
 				var res []db.Account
-				json.Unmarshal(w.Body.Bytes(), &res)
+				err := json.Unmarshal(w.Body.Bytes(), &res)
+				require.NoError(t, err)
 				require.Equal(t, accounts, res)
 			},
 		},

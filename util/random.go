@@ -21,10 +21,10 @@ func RandomInt(min, max int64) int64 {
 // RandomString generates a random string of length n
 func RandomString(n int) string {
 	var sb strings.Builder
-	len := len(alphabet)
+	length := len(alphabet)
 
 	for i := 0; i < n; i++ {
-		c := alphabet[rand.Intn(len)]
+		c := alphabet[rand.Intn(length)]
 		sb.WriteByte(c)
 	}
 
@@ -44,8 +44,8 @@ func RandomBalance() int64 {
 // RandomCurrency generates a random currency code
 func RandomCurrency() string {
 	currencies := []string{"USD", "EUR", "TWD"}
-	len := len(currencies)
-	return currencies[rand.Intn(len)]
+	length := len(currencies)
+	return currencies[rand.Intn(length)]
 }
 
 // RandomEmail generates a random email

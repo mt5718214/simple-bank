@@ -24,7 +24,7 @@ type Payload struct {
 
 // creates a new token payload with specific username and duration
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	tokenId, err := uuid.NewRandom()
+	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	expireTime := nowTime.Add(duration)
 
 	payload := &Payload{
-		ID:        tokenId,
+		ID:        tokenID,
 		Username:  username,
 		IssuedAt:  nowTime,
 		ExpiredAt: expireTime,
