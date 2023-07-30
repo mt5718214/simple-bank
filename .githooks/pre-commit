@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "pre-commit"
+# run lint
+golangci-lint run
