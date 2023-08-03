@@ -10,10 +10,10 @@ import (
 )
 
 type transferReq struct {
-	From_account_id int64  `json:"from_account_id" binding:"required,min=1"`
-	To_account_id   int64  `json:"to_account_id" binding:"required,min=1"`
-	Amount          int64  `json:"amount" binding:"required,gt=0"`
-	Currency        string `json:"currency" binding:"required,currency"`
+	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"`
+	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`
+	Amount        int64  `json:"amount" binding:"required,gt=0"`
+	Currency      string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createTransfer(c *gin.Context) {
@@ -23,17 +23,17 @@ func (server *Server) createTransfer(c *gin.Context) {
 		return
 	}
 
-	if !server.validAccount(c, req.From_account_id, req.Currency) {
+	if !server.validAccount(c, req.FromAccountID, req.Currency) {
 		return
 	}
 
-	if !server.validAccount(c, req.From_account_id, req.Currency) {
+	if !server.validAccount(c, req.FromAccountID, req.Currency) {
 		return
 	}
 
 	arg := db.TransferTxParams{
-		FromAccountID: req.From_account_id,
-		ToAccountID:   req.To_account_id,
+		FromAccountID: req.FromAccountID,
+		ToAccountID:   req.ToAccountID,
 		Amount:        req.Amount,
 	}
 	result, err := server.store.TransferTx(c, arg)
