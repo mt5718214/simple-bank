@@ -2,15 +2,16 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	db "simplebank/db/sqlc"
+	"simplebank/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
 
 type createAccountReq struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -21,8 +22,9 @@ func (server *Server) createAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -64,6 +66,13 @@ func (server *Server) getAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesn't belong to authorization user")
+		c.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	c.JSON(http.StatusOK, account)
 }
 
@@ -79,7 +88,9 @@ func (server *Server) listAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authPayloadKey).(*token.Payload)
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
@@ -93,50 +104,50 @@ func (server *Server) listAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, accounts)
 }
 
-type updateAccountReq struct {
-	ID      int64 `uri:"id" binding:"min=1"`
-	Balance int64 `json:"balance" binding:"min=0"`
-}
+// type updateAccountReq struct {
+// 	ID      int64 `uri:"id" binding:"min=1"`
+// 	Balance int64 `json:"balance" binding:"min=0"`
+// }
 
-func (server *Server) updateAccount(c *gin.Context) {
-	var req updateAccountReq
-	if err := c.ShouldBindUri(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+// func (server *Server) updateAccount(c *gin.Context) {
+// 	var req updateAccountReq
+// 	if err := c.ShouldBindUri(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
 
-	arg := db.UpdateAccountParams{
-		ID:      req.ID,
-		Balance: req.Balance,
-	}
-	_, err := server.store.UpdateAccount(c, arg)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+// 	arg := db.UpdateAccountParams{
+// 		ID:      req.ID,
+// 		Balance: req.Balance,
+// 	}
+// 	_, err := server.store.UpdateAccount(c, arg)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
 
-	c.JSON(http.StatusNoContent, nil)
-}
+// 	c.JSON(http.StatusNoContent, nil)
+// }
 
-type deleteAccountReq struct {
-	ID int64 `uri:"id" binding:"min=1"`
-}
+// type deleteAccountReq struct {
+// 	ID int64 `uri:"id" binding:"min=1"`
+// }
 
-func (server *Server) deleteAccount(c *gin.Context) {
-	var req deleteAccountReq
-	if err := c.ShouldBindUri(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+// func (server *Server) deleteAccount(c *gin.Context) {
+// 	var req deleteAccountReq
+// 	if err := c.ShouldBindUri(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
 
-	if err := server.store.DeleteAccount(c, req.ID); err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+// 	if err := server.store.DeleteAccount(c, req.ID); err != nil {
+// 		c.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
 
-	c.JSON(http.StatusNoContent, nil)
-}
+// 	c.JSON(http.StatusNoContent, nil)
+// }
