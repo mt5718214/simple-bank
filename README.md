@@ -1,6 +1,57 @@
 # This a simplebank
 very simple haha~
 
+## Docker-compose-healthcheck
+### 1. use additional scripts [wait-for](https://github.com/eficode/wait-for)
+```sh
+# Download the wait-for file & rename to wait-for.sh
+# make it executable
+chmod +x wait-for.sh
+```
+```Dockerfile
+FROM alpine:latest AS release
+WORKDIR /app
+...
+COPY ./wait-for.sh . # copy into images
+ENTRYPOINT ["/app/start.sh"]
+CMD ["/app/main"]
+```
+
+### 2. use the [healthcheck](https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck) property
+```yml
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: simple_bank
+    # healthcheck configured
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+
+  simplebank:
+    depends_on:
+      postgres:
+        # This specifies that a dependency is expected to be “healthy”, which is defined with healthcheck, before starting a dependent service.
+        condition: service_healthy
+    build:
+      context: ./
+    environment:
+      DB_SOURCE: 'postgres://root:secret@postgres:5432/simple_bank?sslmode=disable'
+    ports:
+      - 8080:8080
+    entrypoint: ["/app/start.sh"]
+    command: ["/app/main"]
+```
+
 ## Git commit type
 - feat: 新增/修改功能 (feature)。
 - fix: 修補 bug (bug fix)。
