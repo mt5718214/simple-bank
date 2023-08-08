@@ -15,6 +15,7 @@ COPY --from=builder /app/app.env app.env
 COPY --from=builder /app/migrate ./migrate
 COPY db/migration ./migration
 COPY ./start.sh .
+COPY ./wait-for.sh .
 # https://docs.docker.com/engine/reference/builder/#entrypoint
 # ENTRYPOINT ["./start.sh"]
 # CMD ["./main"]

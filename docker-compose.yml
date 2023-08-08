@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: simple_bank
+    ports:
+      - 5432:5432
+
+  simplebank:
+    depends_on:
+      - postgres
+    build:
+      context: ./
+    environment:
+      DB_SOURCE: 'postgres://root:secret@postgres:5432/simple_bank?sslmode=disable'
+    ports:
+      - 8080:8080
+    # Setting entrypoint both overrides any default entrypoint set on the service’s image with the ENTRYPOINT Dockerfile instruction, and clears out any default command on the image - meaning that if there’s a CMD instruction in the Dockerfile, it is ignored.
+    entrypoint: ["./wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]
