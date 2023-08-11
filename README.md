@@ -13,7 +13,7 @@ FROM alpine:latest AS release
 WORKDIR /app
 ...
 COPY ./wait-for.sh . # copy into images
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["./wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
 CMD ["/app/main"]
 ```
 
