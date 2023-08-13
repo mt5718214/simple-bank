@@ -20,11 +20,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # ECR Public can only be logged into from the us-east-1 region. 
+      # In the aws-actions/configure-aws-credentials action, the aws-region input must be us-east-1
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::748398208383:role/github-action-deploy-role
-          aws-region: ap-northeast-1 # setup your region
+          aws-region: us-east-1
 
       - name: Login to Amazon ECR Public
         id: login-ecr-public
