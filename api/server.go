@@ -12,10 +12,10 @@ import (
 )
 
 type Server struct {
-	config     util.Config
 	store      db.Store
 	tokenMaker *token.PasetoMaker
 	router     *gin.Engine
+	config     util.Config
 }
 
 func NewServer(config util.Config, store db.Store) (*Server, error) {

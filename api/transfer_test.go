@@ -27,11 +27,11 @@ func TestCreateTransfer(t *testing.T) {
 	account2.Currency = USD
 
 	testCase := []struct {
-		name          string
-		input         transferReq
 		setupAuth     func(t *testing.T, tokenMaker *token.PasetoMaker, req *http.Request)
 		buildStubs    func(store *mockdb.MockStore, arg transferReq)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		name          string
+		input         transferReq
 	}{
 		{
 			name: "OK",

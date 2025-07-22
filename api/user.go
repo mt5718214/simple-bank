@@ -19,11 +19,11 @@ type createUserReq struct {
 }
 
 type userRes struct {
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 	Username          string    `json:"username"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	CreatedAt         time.Time `json:"created_at"`
 }
 
 func newUserRes(user db.User) userRes {
@@ -77,8 +77,8 @@ type loginUserReq struct {
 }
 
 type loginUserRes struct {
-	AccessToken string  `json:"access_token"`
 	User        userRes `json:"user"`
+	AccessToken string  `json:"access_token"`
 }
 
 func (server *Server) loginUser(c *gin.Context) {

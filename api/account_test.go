@@ -25,11 +25,11 @@ func TestGetAccount(t *testing.T) {
 	account := randomAccount(user.Username)
 
 	testCase := []struct {
-		name          string
-		accountID     int64
 		setupAuth     func(t *testing.T, tokenMaker *token.PasetoMaker, req *http.Request)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		name          string
+		accountID     int64
 	}{
 		{
 			name:      "OK",
@@ -159,11 +159,11 @@ func TestCreateAccount(t *testing.T) {
 	account := randomAccount(user.Username)
 
 	testCase := []struct {
-		name          string
 		input         gin.H
 		setupAuth     func(t *testing.T, tokenMaker *token.PasetoMaker, req *http.Request)
 		buildStubs    func(store *mockdb.MockStore, arg db.CreateAccountParams)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		name          string
 	}{
 		{
 			name: "OK",
@@ -282,11 +282,11 @@ func TestListAccount(t *testing.T) {
 		accounts = append(accounts, randomAccount(user.Username))
 	}
 	testCase := []struct {
-		name          string
-		input         listAccountReq
 		setupAuth     func(t *testing.T, tokenMaker *token.PasetoMaker, req *http.Request)
 		buildStubs    func(store *mockdb.MockStore, arg listAccountReq)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		name          string
+		input         listAccountReq
 	}{
 		{
 			name: "OK",

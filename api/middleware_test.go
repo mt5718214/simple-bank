@@ -29,9 +29,9 @@ func addAuthorization(
 
 func TestAuthMiddleware(t *testing.T) {
 	testCase := []struct {
-		name          string
 		setupAuth     func(t *testing.T, tokenMaker *token.PasetoMaker, req *http.Request)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		name          string
 	}{
 		{
 			name: "OK",

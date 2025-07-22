@@ -49,10 +49,10 @@ func TestCreateUser(t *testing.T) {
 	user, password := randomUser()
 
 	testCase := []struct {
-		name          string
-		input         createUserReq
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+		input         createUserReq
+		name          string
 	}{
 		{
 			name: "OK",
