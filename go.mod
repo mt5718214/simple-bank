@@ -1,11 +1,11 @@
 module simplebank
 
-go 1.19
+go 1.23
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/go-playground/validator/v10 v10.11.1
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.7
