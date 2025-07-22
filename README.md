@@ -1,126 +1,199 @@
-# This a simplebank
-very simple haha~
+# Simple Bank API
 
-## Docker-compose-healthcheck
-### 1. use additional scripts [wait-for](https://github.com/eficode/wait-for)
-```sh
-# Download the wait-for file & rename to wait-for.sh
-# make it executable
-chmod +x wait-for.sh
-```
-```Dockerfile
-FROM alpine:latest AS release
-WORKDIR /app
-...
-COPY ./wait-for.sh . # copy into images
-ENTRYPOINT ["./wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
-CMD ["/app/main"]
+A RESTful API service for a simple banking system built with Go, providing secure account management and money transfer functionality.
+
+## 🚀 Features
+
+- **User Management**: User registration and authentication
+- **Account Management**: Create and manage bank accounts
+- **Money Transfers**: Secure transfers between accounts with transaction support
+- **JWT/PASETO Authentication**: Token-based authentication system
+- **Database Transactions**: ACID compliance for financial operations
+- **Input Validation**: Comprehensive request validation
+- **Docker Support**: Containerized deployment
+
+## 🛠 Tech Stack
+
+- **Language**: Go 1.23
+- **Web Framework**: Gin
+- **Database**: PostgreSQL
+- **ORM**: SQLC (SQL code generation)
+- **Authentication**: JWT & PASETO tokens
+- **Testing**: Testify, GoMock
+- **Containerization**: Docker & Docker Compose
+- **Database Migration**: golang-migrate
+- **Linting**: golangci-lint
+
+## 📋 Prerequisites
+
+- Go 1.23+
+- Docker & Docker Compose
+- PostgreSQL (if running locally)
+- golang-migrate CLI tool
+
+## 🚀 Quick Start
+
+### Using Docker Compose (Recommended)
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/mt5718214/simple-bank.git
+   cd simplebank
+   ```
+
+2. **Start the services**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **The API will be available at**: `http://localhost:8080`
+
+### Local Development
+
+1. **Start PostgreSQL**
+
+   ```bash
+   make postgres
+   ```
+
+2. **Create database**
+
+   ```bash
+   make createdb
+   ```
+
+3. **Run database migrations**
+
+   ```bash
+   make migrateup
+   ```
+
+4. **Start the server**
+   ```bash
+   make server
+   ```
+
+## 📚 API Endpoints
+
+### Authentication
+
+- `POST /users` - Register a new user
+- `POST /users/login` - User login
+
+### Accounts (Authenticated)
+
+- `POST /accounts` - Create a new account
+- `GET /accounts/:id` - Get account by ID
+- `GET /accounts` - List user's accounts
+
+### Transfers (Authenticated)
+
+- `POST /transfers` - Create a money transfer
+
+## 🔧 Configuration
+
+Copy `app.env` and modify the values as needed:
+
+```env
+DB_DRIVER="postgres"
+DB_SOURCE="postgres://root:secret@localhost:5432/simple_bank?sslmode=disable"
+SERVER_ADDRESS="0.0.0.0:8080"
+TOKEN_SYMMETRIC_KEY=your-32-character-secret-key
+ACCESS_TOKEN_DURATION=15m
 ```
 
-### 2. use the [healthcheck](https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck) property
-```yml
-version: '3.9'
+## 🧪 Testing
 
-services:
-  postgres:
-    image: postgres:12-alpine
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: simple_bank
-    # healthcheck configured
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - 5432:5432
+Run all tests:
 
-  simplebank:
-    depends_on:
-      postgres:
-        # This specifies that a dependency is expected to be “healthy”, which is defined with healthcheck, before starting a dependent service.
-        condition: service_healthy
-    build:
-      context: ./
-    environment:
-      DB_SOURCE: 'postgres://root:secret@postgres:5432/simple_bank?sslmode=disable'
-    ports:
-      - 8080:8080
-    entrypoint: ["/app/start.sh"]
-    command: ["/app/main"]
-```
-
-## Git commit type
-- feat: 新增/修改功能 (feature)。
-- fix: 修補 bug (bug fix)。
-- docs: 文件 (documentation)。
-- style: 格式 (不影響程式碼運行的變動 white-space, formatting, missing semi - colons, etc)。
-- refactor: 重構 (既不是新增功能，也不是修補 bug 的程式碼變動)。
-- perf: 改善效能 (A code change that improves performance)。
-- test: 增加測試 (when adding missing tests)。
-- chore: 建構程序或輔助工具的變動 (maintain)。
-- revert: 撤銷回覆先前的 commit 例如：revert: type(scope): subject (回覆版本：xxxx)。
-
-## Linters
-
-### install brew install golangci-lint
-```
-brew install golangci-lint
-```
-
-### add .golangci.yml setting
-```
-cat <<EOF>.golangci.yml
-linters-settings:
-  govet:
-    vettool:
-      settings:
-        - all
-
-linters:
-  disable-all: true
-  enable:
-    - errcheck
-    - gofmt
-    - govet
-    - revive
-    - staticcheck
-    - unused
-EOF
-```
-
-### run lint
-```
-golangci-lint run
-```
-
-
-## pre-commit
-### create pre-commit file in the .githooks directoty
-```
-$ mkdir .githooks
-```
-### create pre-commit file
-```
-$ touch pre-commit
-```
 ```bash
-# Enter the following statement
+make test
+```
 
-#!/bin/bash
-echo "pre-commit"
-# run lint
+## 🔨 Development Commands
+
+```bash
+# Database operations
+make postgres          # Start PostgreSQL container
+make createdb          # Create database
+make dropdb            # Drop database
+make migrateup         # Run all migrations
+make migratedown       # Rollback all migrations
+
+# Code generation
+make sqlc              # Generate SQL code
+make mock              # Generate mocks for testing
+
+# Development
+make server            # Start the server
+make test              # Run tests
+```
+
+## 🐳 Docker
+
+### Build and run with Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+### Health Check
+
+The application includes health checks to ensure PostgreSQL is ready before starting the API server.
+
+## 📝 Code Quality
+
+### Linting
+
+```bash
+# Install golangci-lint
+brew install golangci-lint
+
+# Run linter
 golangci-lint run
 ```
 
-### make pre-commit file as executable
-```
-chmod 744 pre-commit
+### Pre-commit Hooks
+
+Set up pre-commit hooks to run linting automatically:
+
+```bash
+git config core.hooksPath .githooks
 ```
 
-### let git know where to execute the hook file
+## 🏗 Project Structure
+
 ```
-$ git config core.hooksPath .githooks
+.
+├── api/                # HTTP handlers and middleware
+├── db/
+│   ├── migration/      # Database migration files
+│   ├── mock/           # Generated mocks
+│   ├── query/          # SQL queries
+│   └── sqlc/           # Generated SQL code
+├── token/              # JWT/PASETO token implementation
+├── util/               # Utility functions and config
+├── docs/               # Documentation
+├── .github/workflows/  # CI/CD pipelines
+└── docker-compose.yml  # Docker services configuration
 ```
+
+## 🚀 Deployment
+
+The project includes GitHub Actions workflows for:
+
+- Automated testing
+- Docker image building
+- Push Docker image to ECR
+
+### Commit Convention
+
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation changes
+- `style:` Code formatting
+- `refactor:` Code refactoring
+- `test:` Adding tests
+- `chore:` Maintenance tasks
