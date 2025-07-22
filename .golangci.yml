@@ -1,15 +1,44 @@
-linters-settings:
-  govet:
-    vettool:
-      settings:
-        - all
+# golangci-lint v2 configuration
+# https://golangci-lint.run/product/migration-guide/
+
+version: "2"
+
+run:
+  timeout: 5m
+  go: "1.23"
+
+  # linters-settings:
+  #   govet:
+  #     enable-all: true
+  #     disable:
+  #       - fieldalignment # too strict for this project
+
+  # revive:
+  #   rules:
+  #     - name: exported
+  #       disabled: false
+  #     - name: unexported-return
+  #       disabled: false
+  #     - name: unused-parameter
+  #       disabled: false
+
+  # staticcheck:
+  #   checks: ["all"]
 
 linters:
-  disable-all: true
+  default: none
   enable:
-    - errcheck
+    - errcheck # Check for unchecked errors
+    # https://github.com/golangci/golangci-lint/discussions/2298#discussioncomment-12614677
+    # golangci-lint run --enable-only govet --fix
+    - govet # Vet examines Go source code and reports suspicious constructs
+    # - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go
+    - staticcheck # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
+    - unused # Check for unused constants, variables, functions and types
+  settings:
+    govet:
+      enable-all: true
+
+formatters:
+  enable:
     - gofmt
-    - govet
-    - revive
-    - staticcheck
-    - unused
